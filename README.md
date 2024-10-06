@@ -1,7 +1,7 @@
 # com_org_project
 Computer Architecture and Organization project
 
-# Steps for installing the virtual environment and packages
+# Steps for creating virtual environment and installing packages
 1. Create virtual environment using this command:  
    ```bash
    python3 -m venv .venv
