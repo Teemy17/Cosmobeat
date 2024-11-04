@@ -1,8 +1,8 @@
 import pygame
 import random
 from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
-from entities import Player, Note
-from hardware import Hardware
+from entities import Player, Note, HoldNote
+# from hardware import Hardware
 
 class Game:
     def __init__(self, width, height):
@@ -11,7 +11,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
 
-        self.hardware = Hardware()
+        # self.hardware = Hardware()
         self.move_area_start = width * 0.25
         self.move_area_end = width * 0.75
         initial_x = (self.move_area_start + self.move_area_end) / 2
@@ -53,7 +53,11 @@ class Game:
 
     def spawn_note(self):
         x = random.uniform(self.move_area_start, self.move_area_end - 50)
-        self.notes.append(Note(x, 0, 50, 20, self.note_speed))
+        if random.random() < 0.3:  # 30% chance to spawn a hold note
+            duration = random.randint(2, 5)  # Hold duration between 2 and 5 units
+            self.notes.append(HoldNote(x, 0, 50, 20, self.note_speed, duration))
+        else:
+            self.notes.append(Note(x, 0, 50, 20, self.note_speed))
 
     def update_notes(self):
         for note in self.notes[:]:
@@ -64,33 +68,57 @@ class Game:
                 self.feedback = "Miss!"
                 self.feedback_time = 30
 
-    def check_note_hit(self):
+    def check_note_hit(self, is_key_pressed):
         hit_range = self.player.rect.width / 2
         for note in self.notes[:]:
             if self.hit_area.colliderect(note.rect):
                 note_center = note.rect.centerx
                 player_center = self.player.rect.centerx
                 if abs(note_center - player_center) <= hit_range:
-                    self.notes.remove(note)
-                    self.score += 100
-                    self.feedback = "Perfect!"
-                    self.feedback_time = 30
-                    self.hit_effect_time = 10
-                    return
+                    # Handle HoldNote differently from normal notes
+                    if isinstance(note, HoldNote):
+                        if is_key_pressed:
+                            if not note.is_being_held:  # Start the hold
+                                note.is_being_held = True
+                                self.score += 50  # Initial hit score
+                            note.hold_progress += 1
+                            if note.hold_progress >= note.duration:
+                                self.notes.remove(note)  # Remove note when fully held
+                                self.score += 50  # Completion bonus
+                                self.feedback = "Perfect Hold!"
+                                self.feedback_time = 30
+                                self.hit_effect_time = 10
+                        else:
+                            if note.is_being_held:  # Stop the hold if key is released
+                                note.is_being_held = False
+                    else:
+                        # For normal notes, just check the spacebar press
+                        if is_key_pressed:
+                            self.notes.remove(note)
+                            self.score += 100
+                            self.feedback = "Perfect!"
+                            self.feedback_time = 30
+                            self.hit_effect_time = 10
+                return  # Exit after hitting a note to avoid multiple hits in one frame
 
     def handle_events(self):
+        is_key_pressed = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_SPACE:
-                    self.check_note_hit()
-
+        
+        # Check if spacebar is being held down
         keys = pygame.key.get_pressed()
+        if keys[pygame.K_SPACE]:
+            is_key_pressed = True # set to true if spacebar is pressed
+
         if keys[pygame.K_LEFT]:
             self.player.move('left')
         if keys[pygame.K_RIGHT]:
             self.player.move('right')
+
+        # Pass the state to check if a note is hit
+        self.check_note_hit(is_key_pressed)
 
     def update(self):
         self.note_spawn_timer += 1
@@ -98,9 +126,9 @@ class Game:
             self.spawn_note()
             self.note_spawn_timer = 0
         self.update_notes()
-        self.update_player_with_sensor()
-        self.check_button_presses()
-        self.update_leds_based_on_position()
+        # self.update_player_with_sensor()
+        # self.check_button_presses()
+        # self.update_leds_based_on_position()
 
     def draw(self):
         self.screen.fill("black")

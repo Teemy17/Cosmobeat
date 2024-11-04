@@ -11,6 +11,22 @@ class Note:
     def draw(self, screen):
         pygame.draw.rect(screen, (0, 255, 0), self.rect)
 
+class HoldNote(Note):
+    def __init__(self, x, y, width, height, speed, duration):
+        super().__init__(x, y, width, height, speed)
+        self.duration = duration
+        self.hold_rect = pygame.Rect(x, y, width, height * duration)
+        self.is_being_held = False
+        self.hold_progress = 0
+
+    def update(self):
+        super().update()
+        self.hold_rect.y = self.rect.y
+
+    def draw(self, screen):
+        pygame.draw.rect(screen, (0, 200, 0), self.hold_rect)  # Darker green for the hold part
+        pygame.draw.rect(screen, (0, 255, 0), self.rect)  # Brighter green for the head
+
 class Player:
     def __init__(self, x, y, width, height, move_area_start, move_area_end):
         self.rect = pygame.Rect(x, y, width, height)
