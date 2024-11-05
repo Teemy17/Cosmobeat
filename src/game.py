@@ -2,7 +2,9 @@ import pygame
 import random
 from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
 from entities import Player, Note, HoldNote
-# from hardware import Hardware
+from hardware import Hardware
+from effects import Particle, HoldEffect, create_hit_effect, update_particles, draw_particles
+
 
 class Game:
     def __init__(self, width, height):
@@ -11,7 +13,7 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
 
-        # self.hardware = Hardware()
+        self.hardware = Hardware()
         self.move_area_start = width * 0.25
         self.move_area_end = width * 0.75
         initial_x = (self.move_area_start + self.move_area_end) / 2
@@ -28,6 +30,7 @@ class Game:
         self.font = pygame.font.Font(None, 36)
         self.hit_area = pygame.Rect(self.move_area_start, self.player.rect.y - 20, self.move_area_end - self.move_area_start, 40)
         self.hit_effect_time = 0
+        self.particles = []  # List to store all particles
 
     def update_player_with_sensor(self):
         gyro_data = self.hardware.sensor.get_gyro_data()
@@ -35,7 +38,7 @@ class Game:
 
     def check_button_presses(self):
         if self.hardware.button_1.is_pressed or self.hardware.button_2.is_pressed:
-            self.check_note_hit()
+            self.check_note_hit(True)
 
     def update_leds_based_on_position(self):
         position = (self.player.rect.x - self.move_area_start) / (self.move_area_end - self.move_area_start)
@@ -67,39 +70,66 @@ class Game:
                 self.score -= 10
                 self.feedback = "Miss!"
                 self.feedback_time = 30
+                # self.hardware.buzzer.beep(0.1, 0, 1) #Uncomment to make buzzer buss
+             
 
     def check_note_hit(self, is_key_pressed):
-        hit_range = self.player.rect.width / 2
+        hit_range = self.player.rect.width / 1.5  # Base hit range
+        perfect_range = hit_range / 4  # Narrowest range for a perfect hit
+        great_range = hit_range / 2    # Mid-range for a great hit
+
         for note in self.notes[:]:
             if self.hit_area.colliderect(note.rect):
-                note_center = note.rect.centerx
+                note_center = note.rect.centerx     
                 player_center = self.player.rect.centerx
-                if abs(note_center - player_center) <= hit_range:
+                distance = abs(note_center - player_center)
+
+                if distance <= hit_range:
                     # Handle HoldNote differently from normal notes
                     if isinstance(note, HoldNote):
                         if is_key_pressed:
                             if not note.is_being_held:  # Start the hold
                                 note.is_being_held = True
                                 self.score += 50  # Initial hit score
+
+                            # Generate hold effect trail while being held
+                            hold_effect = HoldEffect(note.rect.centerx, note.rect.centery, (255, 255, 255), self.particles)
+                            hold_effect.generate_trail()
+
                             note.hold_progress += 1
                             if note.hold_progress >= note.duration:
-                                self.notes.remove(note)  # Remove note when fully held
+                                self.notes.remove(note)
                                 self.score += 50  # Completion bonus
                                 self.feedback = "Perfect Hold!"
                                 self.feedback_time = 30
                                 self.hit_effect_time = 10
                         else:
-                            if note.is_being_held:  # Stop the hold if key is released
-                                note.is_being_held = False
+                            if note.is_being_held:
+                                note.is_being_held = False  # End hold if key is released
                     else:
-                        # For normal notes, just check the spacebar press
                         if is_key_pressed:
-                            self.notes.remove(note)
-                            self.score += 100
-                            self.feedback = "Perfect!"
+                            hit_type = None
+                            if distance <= perfect_range:
+                                self.score += 150
+                                self.feedback = "Perfect!"
+                                hit_type = "Perfect"
+                            elif distance <= great_range:
+                                self.score += 100
+                                self.feedback = "Great!"
+                                hit_type = "Great"
+                            else:
+                                self.score += 50
+                                self.feedback = "Good!"
+                                hit_type = "Good"
+
+                            # Create hit effect particles
+                            create_hit_effect(note.rect.centerx, note.rect.centery, hit_type, self.particles)
+
+                            # Set feedback display time and remove note
                             self.feedback_time = 30
                             self.hit_effect_time = 10
-                return  # Exit after hitting a note to avoid multiple hits in one frame
+                            self.notes.remove(note)
+                return
 
     def handle_events(self):
         is_key_pressed = False
@@ -126,9 +156,11 @@ class Game:
             self.spawn_note()
             self.note_spawn_timer = 0
         self.update_notes()
-        # self.update_player_with_sensor()
-        # self.check_button_presses()
-        # self.update_leds_based_on_position()
+        self.update_player_with_sensor()
+        self.check_button_presses()
+        self.update_leds_based_on_position()
+        update_particles(self.particles)  # Update particles from effects.py
+
 
     def draw(self):
         self.screen.fill("black")
@@ -138,6 +170,10 @@ class Game:
         for note in self.notes:
             note.draw(self.screen)
 
+        # Draw particles after other elements
+        draw_particles(self.screen, self.particles)  # Draw particles from effects.py
+
+        # Draw score and feedback
         score_text = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
         self.screen.blit(score_text, (10, 10))
 
@@ -146,13 +182,9 @@ class Game:
             self.screen.blit(feedback_text, (self.screen.get_width() // 2 - 50, 50))
             self.feedback_time -= 1
 
-        if self.hit_effect_time > 0:
-            pygame.draw.rect(self.screen, HIT_COLOR, self.hit_area, 3)
-            self.hit_effect_time -= 1
-
     def run(self):
         while self.running:
-            self.handle_events()
+            # self.handle_events()
             self.update()
             self.draw()
             pygame.display.flip()
