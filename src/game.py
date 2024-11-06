@@ -6,7 +6,7 @@ from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
 from entities import Player, Note, HoldNote
 from menu import main_menu
 from hardware import Hardware
-from effects import Particle, HoldEffect, create_hit_effect, update_particles, draw_particles
+from effects import Particle, HoldEffect, create_hit_effect_particle, update_particles, draw_particles, DiamondEffect, create_hit_effect_diamond, draw_diamond, update_diamond
 
 class Game:
     def __init__(self, width, height, screen_manager):
@@ -34,6 +34,9 @@ class Game:
         self.font = pygame.font.Font(None, 36)
         self.hit_area = pygame.Rect(self.move_area_start, self.player.rect.y - 20, self.move_area_end - self.move_area_start, 40)
         self.hit_effect_time = 0
+        self.combo = 0
+        self.highest_combo = 0
+        self.diamond = []
         self.particles = []  # List to store all particles
 
         self.reset_game(1280, 720)
@@ -89,6 +92,7 @@ class Game:
                 self.score -= 10
                 self.feedback = "Miss!"
                 self.feedback_time = 30
+                self.combo = 0
                 # self.hardware.buzzer.beep(0.1, 0, 1) #Uncomment to make buzzer buss
              
 
@@ -109,19 +113,21 @@ class Game:
                         if is_key_pressed:
                             if not note.is_being_held:  # Start the hold
                                 note.is_being_held = True
+                                self.combo += 1
                                 self.score += 50  # Initial hit score
 
                             # Generate hold effect trail while being held
-                            hold_effect = HoldEffect(note.rect.centerx, note.rect.centery, (255, 255, 255), self.particles)
-                            hold_effect.generate_trail()
+                            create_hit_effect_diamond(note.rect.centerx, note.rect.centery, "Perfect", self.diamond)
 
                             note.hold_progress += 1
                             if note.hold_progress >= note.duration:
                                 self.notes.remove(note)
                                 self.score += 50  # Completion bonus
+                                self.combo += 1
                                 self.feedback = "Perfect Hold!"
                                 self.feedback_time = 30
                                 self.hit_effect_time = 10
+                                create_hit_effect_diamond(note.rect.centerx, note.rect.centery, "Perfect", self.diamond)
                         else:
                             if note.is_being_held:
                                 note.is_being_held = False  # End hold if key is released
@@ -142,11 +148,14 @@ class Game:
                                 hit_type = "Good"
 
                             # Create hit effect particles
-                            create_hit_effect(note.rect.centerx, note.rect.centery, hit_type, self.particles)
+                            create_hit_effect_diamond(note.rect.centerx, note.rect.centery, hit_type, self.diamond)
 
                             # Set feedback display time and remove note
                             self.feedback_time = 30
                             self.hit_effect_time = 10
+                            self.combo += 1
+                            if self.combo > self.highest_combo:
+                                self.highest_combo = self.combo
                             self.notes.remove(note)
                 return
 
@@ -202,7 +211,7 @@ class Game:
         self.update_player_with_sensor()
         self.check_button_presses()
         self.update_leds_based_on_position()
-        update_particles(self.particles)  # Update particles from effects.py
+        update_diamond(self.diamond)  # Update diamonds
 
 
     def draw(self):
@@ -214,7 +223,7 @@ class Game:
             note.draw(self.screen)
 
         # Draw particles after other elements
-        draw_particles(self.screen, self.particles)  # Draw particles from effects.py
+        draw_diamond(self.screen, self.diamond)  # Draw particles from effects.py
 
         # Draw score and feedback
         score_text = self.font.render(f"Score: {self.score}", True, (255, 255, 255))
@@ -222,8 +231,12 @@ class Game:
 
         if self.feedback_time > 0:
             feedback_text = self.font.render(self.feedback, True, (255, 255, 255))
-            self.screen.blit(feedback_text, (self.screen.get_width() // 2 - 50, 50))
+            self.screen.blit(feedback_text, (self.screen.get_width() // 2 - 50, 100))
             self.feedback_time -= 1
+            
+        if self.combo > 0:
+            combo_text = self.font.render(f"Combo: {self.combo}", True, (255, 255, 255))
+            self.screen.blit(combo_text, (self.screen.get_width() // 2 - 50, 70))  # Position above feedback
 
     def run(self):
         while self.running:
