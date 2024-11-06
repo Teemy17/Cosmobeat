@@ -3,7 +3,7 @@ import random
 import button
 from constants import MENU, GAME
 from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
-from entities import Player, Note, HoldNote
+from entities import Player, Note, HoldNote, MoveNote
 from menu import main_menu
 from hardware import Hardware
 from effects import Particle, HoldEffect, create_hit_effect_particle, update_particles, draw_particles, DiamondEffect, create_hit_effect_diamond, draw_diamond, update_diamond
@@ -81,6 +81,8 @@ class Game:
         if random.random() < 0.3:  # 30% chance to spawn a hold note
             duration = random.randint(2, 5)  # Hold duration between 2 and 5 units
             self.notes.append(HoldNote(x, 0, 50, 20, self.note_speed, duration))
+        elif 0.6 <= random.random() >= 0.3:
+            self.notes.append(MoveNote(x, 0, 50, 50, self.note_speed))
         else:
             self.notes.append(Note(x, 0, 50, 20, self.note_speed))
 
@@ -131,6 +133,14 @@ class Game:
                         else:
                             if note.is_being_held:
                                 note.is_being_held = False  # End hold if key is released
+                    elif isinstance(note, MoveNote):
+                            self.score += 50  # Increase score for a successful alignment
+                            self.feedback = "Perfect Drag"
+                            create_hit_effect_particle(note.rect.centerx, note.rect.centery, "Perfect", self.particles)
+                            self.combo += 1
+                            self.feedback_time = 30
+                            self.hit_effect_time = 10
+                            self.notes.remove(note)  # Remove MoveNote after successful hit
                     else:
                         if is_key_pressed:
                             hit_type = None
@@ -212,6 +222,7 @@ class Game:
         self.check_button_presses()
         self.update_leds_based_on_position()
         update_diamond(self.diamond)  # Update diamonds
+        update_particles(self.particles)
 
 
     def draw(self):
@@ -224,6 +235,7 @@ class Game:
 
         # Draw particles after other elements
         draw_diamond(self.screen, self.diamond)  # Draw particles from effects.py
+        draw_particles(self.screen, self.particles)
 
         # Draw score and feedback
         score_text = self.font.render(f"Score: {self.score}", True, (255, 255, 255))

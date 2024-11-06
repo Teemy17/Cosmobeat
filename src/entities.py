@@ -26,6 +26,23 @@ class HoldNote(Note):
     def draw(self, screen):
         pygame.draw.rect(screen, (0, 200, 0), self.hold_rect)  # Darker green for the hold part
         pygame.draw.rect(screen, (0, 255, 0), self.rect)  # Brighter green for the head
+        
+class MoveNote(Note):
+    def __init__(self, x, y, width, height, speed):
+        super().__init__(x, y, width, height, speed)
+
+    def draw(self, screen):
+        # Draw as a diamond shape (rotated square)
+        diamond_surface = pygame.Surface((self.rect.width, self.rect.height), pygame.SRCALPHA)
+        pygame.draw.polygon(
+            diamond_surface, (255, 255, 255),  # White color
+            [(self.rect.width // 2, 0), (self.rect.width, self.rect.height // 2), 
+             (self.rect.width // 2, self.rect.height), (0, self.rect.height // 2)]
+        )
+        # Blit the diamond onto the main screen
+        screen.blit(diamond_surface, (self.rect.x, self.rect.y))
+
+
 
 class Player:
     def __init__(self, x, y, width, height, move_area_start, move_area_end):
