@@ -20,7 +20,8 @@ def main_menu(screen, screen_manager):
         screen_manager.change_screen(GAME)
 
     if control_button.draw(screen):
-        screen_manager.change_screen(CONTROL)
+        # screen_manager.change_screen(CONTROL)
+        pass
     
     if quit_button.draw(screen):
         return False

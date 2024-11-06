@@ -9,7 +9,7 @@ def main():
     screen_manager = ScreenManager()
     screen = pygame.display.set_mode((1280, 720))
     running = True
-    game_instance = Game(1280,720)
+    game_instance = Game(1280,720, screen_manager)
 
     while running:
         if screen_manager.current_screen == MENU:
