@@ -1,17 +1,21 @@
 import pygame
 import random
+import button
+from constants import MENU, GAME
 from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
 from entities import Player, Note, HoldNote
+from menu import main_menu
 from hardware import Hardware
 from effects import Particle, HoldEffect, create_hit_effect, update_particles, draw_particles
 
-
 class Game:
-    def __init__(self, width, height):
+    def __init__(self, width, height, screen_manager):
         pygame.init()
+        self.screen_manager = screen_manager
         self.screen = pygame.display.set_mode((width, height))
         self.clock = pygame.time.Clock()
         self.running = True
+        self.pause = False
 
         self.hardware = Hardware()
         self.move_area_start = width * 0.25
@@ -32,6 +36,8 @@ class Game:
         self.hit_effect_time = 0
         self.particles = []  # List to store all particles
 
+        self.reset_game(1280, 720)
+
     def update_player_with_sensor(self):
         gyro_data = self.hardware.sensor.get_gyro_data()
         self.player.move_with_gyro(gyro_data['x'])
@@ -46,6 +52,19 @@ class Game:
         self.hardware.led_2.value = max(0, 1 - abs(position - 0.375) * 8)
         self.hardware.led_3.value = max(0, 1 - abs(position - 0.625) * 8)
         self.hardware.led_4.value = max(0, 1 - abs(position - 0.875) * 8)
+
+    def reset_game(self, width, height):
+        self.pause = False
+        self.score = 0
+        self.notes = []
+        self.feedback = ""
+        self.feedback_time = 0
+        self.hit_effect_time = 0
+        self.move_area_start = width * 0.25
+        self.move_area_end = width * 0.75
+        initial_x = (self.move_area_start + self.move_area_end) / 2
+        initial_y = height * 0.85
+        self.player = Player(initial_x, initial_y, 100, 20, self.move_area_start, self.move_area_end)
 
     def draw_game_area(self):
         line_thickness = 5
@@ -136,19 +155,43 @@ class Game:
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_p:
+                    self.pause = not self.pause
         
         # Check if spacebar is being held down
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_SPACE]:
-            is_key_pressed = True # set to true if spacebar is pressed
+        if not self.pause:
+            keys = pygame.key.get_pressed()
+            if keys[pygame.K_SPACE]:
+                is_key_pressed = True # set to true if spacebar is pressed
 
-        if keys[pygame.K_LEFT]:
-            self.player.move('left')
-        if keys[pygame.K_RIGHT]:
-            self.player.move('right')
-
+            if keys[pygame.K_LEFT]:
+                self.player.move('left')
+            if keys[pygame.K_RIGHT]:
+                self.player.move('right')
+        
         # Pass the state to check if a note is hit
         self.check_note_hit(is_key_pressed)
+    
+    def draw_pause_screen(self):
+        self.screen.fill("black")
+
+        font = pygame.font.Font(None, 150)
+        text = font.render("Paused", True, (255, 255, 255))
+        self.screen.blit(text, (470, 100))
+
+        resume_img = pygame.image.load("assets/resume_button.png").convert_alpha()
+        quit_img = pygame.image.load("assets/quit_button.png").convert_alpha()
+
+        resume_button = button.Button(520, 285, resume_img, 0.45)
+        quit_button = button.Button(520, 415, quit_img, 0.45)
+
+        if resume_button.draw(self.screen):
+            self.pause = False
+        if quit_button.draw(self.screen):
+            self.screen_manager.change_screen(MENU)
+
+        pygame.display.flip()
 
     def update(self):
         self.note_spawn_timer += 1
@@ -184,9 +227,19 @@ class Game:
 
     def run(self):
         while self.running:
-            # self.handle_events()
-            self.update()
-            self.draw()
+            if self.screen_manager.current_screen == MENU:
+                if not main_menu(self.screen, self.screen_manager):
+                    self.running = False
+                elif self.screen_manager.current_screen == GAME:
+                    self.reset_game(1280, 720)  
+            elif self.screen_manager.current_screen == GAME:
+                self.handle_events()
+                if not self.pause:
+                    self.update()
+                    self.draw()
+                else:
+                    self.draw_pause_screen()
+            
             pygame.display.flip()
             self.clock.tick(60)
 
