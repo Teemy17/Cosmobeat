@@ -5,7 +5,7 @@ from constants import MENU, GAME
 from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
 from entities import Player, Note, HoldNote, MoveNote
 from menu import main_menu
-from hardware import Hardware
+# from hardware import Hardware
 from effects import Particle, HoldEffect, create_hit_effect_particle, update_particles, draw_particles, DiamondEffect, create_hit_effect_diamond, draw_diamond, update_diamond
 
 class Game:
@@ -17,7 +17,7 @@ class Game:
         self.running = True
         self.pause = False
 
-        self.hardware = Hardware()
+        # self.hardware = Hardware()
         self.move_area_start = width * 0.25
         self.move_area_end = width * 0.75
         initial_x = (self.move_area_start + self.move_area_end) / 2
@@ -63,6 +63,10 @@ class Game:
         self.feedback = ""
         self.feedback_time = 0
         self.hit_effect_time = 0
+        self.combo = 0
+        self.highest_combo = 0
+        self.diamond = []
+        self.particles = []
         self.move_area_start = width * 0.25
         self.move_area_end = width * 0.75
         initial_x = (self.move_area_start + self.move_area_end) / 2
@@ -199,8 +203,8 @@ class Game:
         text = font.render("Paused", True, (255, 255, 255))
         self.screen.blit(text, (470, 100))
 
-        resume_img = pygame.image.load("assets/resume_button.png").convert_alpha()
-        quit_img = pygame.image.load("assets/quit_button.png").convert_alpha()
+        resume_img = pygame.image.load("../assets/resume_button.png").convert_alpha()
+        quit_img = pygame.image.load("../assets/quit_button.png").convert_alpha()
 
         resume_button = button.Button(520, 285, resume_img, 0.45)
         quit_button = button.Button(520, 415, quit_img, 0.45)
@@ -218,9 +222,9 @@ class Game:
             self.spawn_note()
             self.note_spawn_timer = 0
         self.update_notes()
-        self.update_player_with_sensor()
-        self.check_button_presses()
-        self.update_leds_based_on_position()
+        # self.update_player_with_sensor()
+        # self.check_button_presses()
+        # self.update_leds_based_on_position()
         update_diamond(self.diamond)  # Update diamonds
         update_particles(self.particles)
 

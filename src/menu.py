@@ -8,9 +8,9 @@ def main_menu(screen, screen_manager):
     font = pygame.font.Font(None, 150)
     text = font.render("Cosmobeat", True, (255, 255, 255))
     
-    play_img = pygame.image.load("assets/play_button.png").convert_alpha()
-    control_img = pygame.image.load("assets/control_button.png").convert_alpha()
-    quit_img = pygame.image.load("assets/quit_button.png").convert_alpha()
+    play_img = pygame.image.load("../assets/play_button.png").convert_alpha()
+    control_img = pygame.image.load("../assets/control_button.png").convert_alpha()
+    quit_img = pygame.image.load("../assets/quit_button.png").convert_alpha()
 
     play_button = button.Button(520, 285, play_img, 0.45)
     control_button = button.Button(520, 415, control_img, 0.45)
