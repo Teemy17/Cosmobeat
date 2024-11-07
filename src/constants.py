@@ -7,3 +7,5 @@ HIT_COLOR = (255, 255, 0)
 # Screen Management
 MENU = 'menu'
 GAME = 'game'
+CONTROL = 'control'
+RESULT = 'result'
