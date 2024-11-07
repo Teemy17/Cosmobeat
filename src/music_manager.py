@@ -88,4 +88,4 @@ class MusicManager:
 
     def is_playing(self):
         """Check if music is currently playing"""
-        return self.is_music_playing
+        return pygame.mixer.music.get_busy()

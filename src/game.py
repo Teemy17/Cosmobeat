@@ -1,13 +1,14 @@
 import pygame
 import random
 import button
-from constants import MENU, GAME
+from constants import MENU, GAME, RESULT
 from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
 from entities import Player, Note, HoldNote, MoveNote
 from menu import main_menu
 # from hardware import Hardware
 from effects import Particle, HoldEffect, create_hit_effect_particle, update_particles, draw_particles, DiamondEffect, create_hit_effect_diamond, draw_diamond, update_diamond
 from music_manager import MusicManager
+from result_screen import ResultScreen
 
 class Game:
     def __init__(self, width, height, screen_manager):
@@ -20,7 +21,7 @@ class Game:
 
         self.music_manager = MusicManager()
         # Load song
-        self.music_manager.load_song("song1", "../assets/freedom_dive.mp3")
+        self.music_manager.load_song("song1", "../assets/test_music.mp3")
 
         # self.hardware = Hardware()
         self.move_area_start = width * 0.25
@@ -44,7 +45,14 @@ class Game:
         self.diamond = []
         self.particles = []  # List to store all particles
 
-        self.reset_game(1280, 720)
+        #counters
+        self.perfect_count = 0
+        self.great_count = 0
+        self.good_count = 0
+        self.miss_count = 0
+        self.hold_count = 0
+        self.drag_count = 0
+
 
     def update_player_with_sensor(self):
         gyro_data = self.hardware.sensor.get_gyro_data()
@@ -62,9 +70,10 @@ class Game:
         self.hardware.led_4.value = max(0, 1 - abs(position - 0.875) * 8)
 
     def reset_game(self, width, height):
+
+        # Reset game state
         self.pause = False
-        self.score = 0
-        self.notes = []
+        self.notes = []  # Clear notes to prevent immediate ending
         self.feedback = ""
         self.feedback_time = 0
         self.hit_effect_time = 0
@@ -72,12 +81,29 @@ class Game:
         self.highest_combo = 0
         self.diamond = []
         self.particles = []
+
+        # Reset counters
+        self.perfect_count = 0
+        self.great_count = 0
+        self.good_count = 0
+        self.miss_count = 0
+        self.hold_count = 0
+        self.drag_count = 0
+
+        # Reset player position and movement area
         self.move_area_start = width * 0.25
         self.move_area_end = width * 0.75
         initial_x = (self.move_area_start + self.move_area_end) / 2
         initial_y = height * 0.85
         self.player = Player(initial_x, initial_y, 100, 20, self.move_area_start, self.move_area_end)
-        self.music_manager.stop()
+
+        # Reset any timers or spawn-related settings
+        self.note_spawn_timer = 0
+        self.note_spawn_interval = 30  # Reset spawn interval if needed
+
+        # Reset the score
+        self.score = 0
+
 
     def draw_game_area(self):
         line_thickness = 5
@@ -105,6 +131,7 @@ class Game:
                 self.feedback = "Miss!"
                 self.feedback_time = 30
                 self.combo = 0
+                self.miss_count += 1
                 # self.hardware.buzzer.beep(0.1, 0, 1) #Uncomment to make buzzer buss
              
 
@@ -139,6 +166,7 @@ class Game:
                                 self.feedback = "Perfect Hold!"
                                 self.feedback_time = 30
                                 self.hit_effect_time = 10
+                                self.hold_count += 1
                                 create_hit_effect_diamond(note.rect.centerx, note.rect.centery, "Perfect", self.diamond)
                         else:
                             if note.is_being_held:
@@ -148,6 +176,7 @@ class Game:
                             self.feedback = "Perfect Drag"
                             create_hit_effect_particle(note.rect.centerx, note.rect.centery, "Perfect", self.particles)
                             self.combo += 1
+                            self.drag_count += 1
                             self.feedback_time = 30
                             self.hit_effect_time = 10
                             self.notes.remove(note)  # Remove MoveNote after successful hit
@@ -156,14 +185,17 @@ class Game:
                             hit_type = None
                             if distance <= perfect_range:
                                 self.score += 150
+                                self.perfect_count += 1
                                 self.feedback = "Perfect!"
                                 hit_type = "Perfect"
                             elif distance <= great_range:
                                 self.score += 100
+                                self.great_count += 1
                                 self.feedback = "Great!"
                                 hit_type = "Great"
                             else:
                                 self.score += 50
+                                self.good_count += 1
                                 self.feedback = "Good!"
                                 hit_type = "Good"
 
@@ -198,7 +230,7 @@ class Game:
                 elif event.key == pygame.K_DOWN:
                     current_volume = pygame.mixer.music.get_volume()
                     self.music_manager.set_volume(max(0.0,current_volume - 0.1))
-        
+
         # Check if spacebar is being held down
         if not self.pause:
             keys = pygame.key.get_pressed()
@@ -228,6 +260,7 @@ class Game:
 
         if resume_button.draw(self.screen):
             self.pause = False
+            self.music_manager.resume()
         if quit_button.draw(self.screen):
             self.screen_manager.change_screen(MENU)
 
@@ -271,25 +304,37 @@ class Game:
             combo_text = self.font.render(f"Combo: {self.combo}", True, (255, 255, 255))
             self.screen.blit(combo_text, (self.screen.get_width() // 2 - 50, 70))  # Position above feedback
 
-    def run(self):
-        # Play the song
-        self.music_manager.play("song1")
 
+    def run(self):
+        self.music_manager.play("song1")
         while self.running:
+            self.handle_events()
             if self.screen_manager.current_screen == MENU:
                 if not main_menu(self.screen, self.screen_manager):
                     self.running = False
-                elif self.screen_manager.current_screen == GAME:
-                    self.reset_game(1280, 720)  
-                    self.music_manager.play("song1")
-            elif self.screen_manager.current_screen == GAME:
-                self.handle_events()
+            if self.screen_manager.current_screen == GAME:
                 if not self.pause:
                     self.update()
                     self.draw()
+                
+                    if not pygame.mixer.music.get_busy() and not self.pause:
+                        self.result_screen = ResultScreen(self.screen, self.screen_manager, {
+                            'score': self.score,
+                            'perfect_count': self.perfect_count,
+                            'great_count': self.great_count,
+                            'good_count': self.good_count,
+                            'miss_count': self.miss_count,
+                            'hold_count': self.hold_count,
+                            'drag_count': self.drag_count,
+                            'highest_combo': self.highest_combo
+                        })
+                        self.screen_manager.change_screen(RESULT)
                 else:
                     self.draw_pause_screen()
-            
+
+            elif self.screen_manager.current_screen == RESULT:
+                self.result_screen.draw()
+
             pygame.display.flip()
             self.clock.tick(60)
 

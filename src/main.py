@@ -2,7 +2,7 @@ import pygame
 from game import Game
 from screen_manager import ScreenManager
 from menu import main_menu
-from constants import MENU, GAME
+from constants import MENU, GAME, CONTROL, RESULT
 
 def main():
     pygame.init()
@@ -16,7 +16,7 @@ def main():
             running = main_menu(screen, screen_manager)
         elif screen_manager.current_screen == GAME:
             running = game_instance.run()
-
+            
     pygame.quit()
 
 if __name__ == "__main__":
