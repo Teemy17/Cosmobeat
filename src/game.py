@@ -7,6 +7,7 @@ from entities import Player, Note, HoldNote, MoveNote
 from menu import main_menu
 # from hardware import Hardware
 from effects import Particle, HoldEffect, create_hit_effect_particle, update_particles, draw_particles, DiamondEffect, create_hit_effect_diamond, draw_diamond, update_diamond
+from music_manager import MusicManager
 
 class Game:
     def __init__(self, width, height, screen_manager):
@@ -16,6 +17,10 @@ class Game:
         self.clock = pygame.time.Clock()
         self.running = True
         self.pause = False
+
+        self.music_manager = MusicManager()
+        # Load song
+        self.music_manager.load_song("song1", "../assets/freedom_dive.mp3")
 
         # self.hardware = Hardware()
         self.move_area_start = width * 0.25
@@ -72,6 +77,7 @@ class Game:
         initial_x = (self.move_area_start + self.move_area_end) / 2
         initial_y = height * 0.85
         self.player = Player(initial_x, initial_y, 100, 20, self.move_area_start, self.move_area_end)
+        self.music_manager.stop()
 
     def draw_game_area(self):
         line_thickness = 5
@@ -181,6 +187,17 @@ class Game:
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_p:
                     self.pause = not self.pause
+                    if self.pause:
+                        self.music_manager.pause()
+                    else:
+                        self.music_manager.resume()
+                # Volume controls
+                elif event.key == pygame.K_UP:
+                    current_volume = pygame.mixer.music.get_volume()
+                    self.music_manager.set_volume(min(1.0,current_volume + 0.1))
+                elif event.key == pygame.K_DOWN:
+                    current_volume = pygame.mixer.music.get_volume()
+                    self.music_manager.set_volume(max(0.0,current_volume - 0.1))
         
         # Check if spacebar is being held down
         if not self.pause:
@@ -255,12 +272,16 @@ class Game:
             self.screen.blit(combo_text, (self.screen.get_width() // 2 - 50, 70))  # Position above feedback
 
     def run(self):
+        # Play the song
+        self.music_manager.play("song1")
+
         while self.running:
             if self.screen_manager.current_screen == MENU:
                 if not main_menu(self.screen, self.screen_manager):
                     self.running = False
                 elif self.screen_manager.current_screen == GAME:
                     self.reset_game(1280, 720)  
+                    self.music_manager.play("song1")
             elif self.screen_manager.current_screen == GAME:
                 self.handle_events()
                 if not self.pause:
@@ -272,4 +293,5 @@ class Game:
             pygame.display.flip()
             self.clock.tick(60)
 
+        self.music_manager.stop()
         pygame.quit()
