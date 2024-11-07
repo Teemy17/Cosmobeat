@@ -4,7 +4,6 @@ import button
 from constants import MENU, GAME, RESULT
 from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
 from entities import Player, Note, HoldNote, MoveNote
-from menu import main_menu
 # from hardware import Hardware
 from effects import Particle, HoldEffect, create_hit_effect_particle, update_particles, draw_particles, DiamondEffect, create_hit_effect_diamond, draw_diamond, update_diamond
 from music_manager import MusicManager
@@ -70,7 +69,6 @@ class Game:
         self.hardware.led_4.value = max(0, 1 - abs(position - 0.875) * 8)
 
     def reset_game(self, width, height):
-
         # Reset game state
         self.pause = False
         self.notes = []  # Clear notes to prevent immediate ending
@@ -244,6 +242,38 @@ class Game:
         
         # Pass the state to check if a note is hit
         self.check_note_hit(is_key_pressed)
+
+    def main_menu(self):
+        self.screen.fill((0, 0, 0))  
+
+        font = pygame.font.Font(None, 150)
+        text = font.render("Cosmobeat", True, (255, 255, 255))
+        
+        play_img = pygame.image.load("../assets/play_button.png").convert_alpha()
+        control_img = pygame.image.load("../assets/control_button.png").convert_alpha()
+        quit_img = pygame.image.load("../assets/quit_button.png").convert_alpha()
+
+        play_button = button.Button(520, 285, play_img, 0.45)
+        control_button = button.Button(520, 415, control_img, 0.45)
+        quit_button = button.Button(520, 545, quit_img, 0.45)
+        
+        if play_button.draw(self.screen):
+            self.screen_manager.change_screen(GAME)
+            self.reset_game(1280, 720)
+            self.music_manager.play("song1")
+
+        if control_button.draw(self.screen):
+            # screen_manager.change_screen(CONTROL)
+            pass
+        
+        if quit_button.draw(self.screen):
+            self.running = False
+        
+        self.screen.blit(text, (370, 100))
+
+        pygame.display.flip()
+
+        return True
     
     def draw_pause_screen(self):
         self.screen.fill("black")
@@ -306,11 +336,11 @@ class Game:
 
 
     def run(self):
-        self.music_manager.play("song1")
+        # self.music_manager.play("song1")
         while self.running:
             self.handle_events()
             if self.screen_manager.current_screen == MENU:
-                if not main_menu(self.screen, self.screen_manager):
+                if not self.main_menu():
                     self.running = False
             if self.screen_manager.current_screen == GAME:
                 if not self.pause:

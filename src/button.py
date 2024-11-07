@@ -15,9 +15,7 @@ class Button:
         
         # Check if the button is hovered over
         if self.rect.collidepoint(pos):
-            # Check if the button is clicked
             if pygame.mouse.get_pressed()[0] == 1 and not self.clicked:
-                print("Button clicked")
                 self.clicked = True
                 action = True
         

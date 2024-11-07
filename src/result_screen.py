@@ -13,11 +13,10 @@ class ResultScreen:
         self.screen.fill("black")
 
         # Display the menu button
-        menu_img = pygame.image.load("../assets/play_button.png").convert_alpha()
-        menu_button = button.Button(self.screen.get_width() // 2 - 100, 400, menu_img, 0.5)
+        menu_img = pygame.image.load("../assets/menu_button.png").convert_alpha()
+        menu_button = button.Button(self.screen.get_width() // 2 - 150, 400, menu_img, 0.5)
 
         if menu_button.draw(self.screen):
-            print("Menu button clicked")
             self.screen_manager.change_screen(MENU)
         
         # Display the title
