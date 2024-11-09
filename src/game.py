@@ -1,10 +1,10 @@
 import pygame
 import random
 import button
-from constants import MENU, GAME, RESULT
+from constants import MENU, GAME, RESULT, CONTROL
 from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
 from entities import Player, Note, HoldNote, MoveNote
-# from hardware import Hardware
+from hardware import Hardware
 from effects import Particle, HoldEffect, create_hit_effect_particle, update_particles, draw_particles, DiamondEffect, create_hit_effect_diamond, draw_diamond, update_diamond
 from music_manager import MusicManager
 from result_screen import ResultScreen
@@ -22,7 +22,7 @@ class Game:
         # Load song
         self.music_manager.load_song("song1", "../assets/test_music.mp3")
 
-        # self.hardware = Hardware()
+        self.hardware = Hardware()
         self.move_area_start = width * 0.25
         self.move_area_end = width * 0.75
         initial_x = (self.move_area_start + self.move_area_end) / 2
@@ -51,6 +51,19 @@ class Game:
         self.miss_count = 0
         self.hold_count = 0
         self.drag_count = 0
+
+        # Initialize buttons
+        play_img = pygame.image.load("../assets/play_button.png").convert_alpha()
+        control_img = pygame.image.load("../assets/control_button.png").convert_alpha()
+        quit_img = pygame.image.load("../assets/quit_button.png").convert_alpha()
+        resume_img = pygame.image.load("../assets/resume_button.png").convert_alpha()
+        
+        # Store buttons as instance attributes
+        self.play_button = button.Button(520, 285, play_img, 0.45)
+        self.control_button = button.Button(520, 415, control_img, 0.45)
+        self.main_menu_quit_button = button.Button(520, 545, quit_img, 0.45)
+        self.pause_quit_button = button.Button(520, 450, quit_img, 0.45)
+        self.resume_button = button.Button(520, 300, resume_img, 0.45)
 
 
     def update_player_with_sensor(self):
@@ -130,7 +143,7 @@ class Game:
                 self.feedback_time = 30
                 self.combo = 0
                 self.miss_count += 1
-                # self.hardware.buzzer.beep(0.1, 0, 1) #Uncomment to make buzzer buss
+                self.hardware.buzzer.beep(0.1, 0, 1) #Uncomment to make buzzer buss
              
 
     def check_note_hit(self, is_key_pressed):
@@ -210,90 +223,90 @@ class Game:
                 return
 
     def handle_events(self):
-        is_key_pressed = False
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 self.running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_p:
-                    self.pause = not self.pause
-                    if self.pause:
-                        self.music_manager.pause()
-                    else:
-                        self.music_manager.resume()
-                # Volume controls
-                elif event.key == pygame.K_UP:
-                    current_volume = pygame.mixer.music.get_volume()
-                    self.music_manager.set_volume(min(1.0,current_volume + 0.1))
-                elif event.key == pygame.K_DOWN:
-                    current_volume = pygame.mixer.music.get_volume()
-                    self.music_manager.set_volume(max(0.0,current_volume - 0.1))
-
-        # Check if spacebar is being held down
-        if not self.pause:
+                return
+            
+            if self.screen_manager.current_screen == GAME:
+                if event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_p:
+                        self.pause = not self.pause
+                        if self.pause:
+                            self.music_manager.pause()
+                        else:
+                            self.music_manager.resume()
+                    elif event.key == pygame.K_UP:
+                        current_volume = pygame.mixer.music.get_volume()
+                        self.music_manager.set_volume(min(1.0, current_volume + 0.1))
+                    elif event.key == pygame.K_DOWN:
+                        current_volume = pygame.mixer.music.get_volume()
+                        self.music_manager.set_volume(max(0.0, current_volume - 0.1))
+        
+        if self.screen_manager.current_screen == GAME and not self.pause:
             keys = pygame.key.get_pressed()
-            if keys[pygame.K_SPACE]:
-                is_key_pressed = True # set to true if spacebar is pressed
-
+            
             if keys[pygame.K_LEFT]:
                 self.player.move('left')
             if keys[pygame.K_RIGHT]:
                 self.player.move('right')
-        
-        # Pass the state to check if a note is hit
-        self.check_note_hit(is_key_pressed)
-
+                
+            is_key_pressed = keys[pygame.K_SPACE]
+            self.check_note_hit(is_key_pressed) 
+                    
     def main_menu(self):
-        self.screen.fill((0, 0, 0))  
-
+        self.screen.fill((0, 0, 0))
         font = pygame.font.Font(None, 150)
         text = font.render("Cosmobeat", True, (255, 255, 255))
         
-        play_img = pygame.image.load("../assets/play_button.png").convert_alpha()
-        control_img = pygame.image.load("../assets/control_button.png").convert_alpha()
-        quit_img = pygame.image.load("../assets/quit_button.png").convert_alpha()
-
-        play_button = button.Button(520, 285, play_img, 0.45)
-        control_button = button.Button(520, 415, control_img, 0.45)
-        quit_button = button.Button(520, 545, quit_img, 0.45)
-        
-        if play_button.draw(self.screen):
+        if self.play_button.draw(self.screen):
             self.screen_manager.change_screen(GAME)
             self.reset_game(1280, 720)
             self.music_manager.play("song1")
 
-        if control_button.draw(self.screen):
-            # screen_manager.change_screen(CONTROL)
-            pass
+        if self.control_button.draw(self.screen):
+            self.screen_manager.change_screen(CONTROL)
         
-        if quit_button.draw(self.screen):
+        if self.main_menu_quit_button.draw(self.screen):
             self.running = False
         
         self.screen.blit(text, (370, 100))
-
         pygame.display.flip()
 
         return True
     
     def draw_pause_screen(self):
         self.screen.fill("black")
-
         font = pygame.font.Font(None, 150)
         text = font.render("Paused", True, (255, 255, 255))
         self.screen.blit(text, (470, 100))
 
-        resume_img = pygame.image.load("../assets/resume_button.png").convert_alpha()
-        quit_img = pygame.image.load("../assets/quit_button.png").convert_alpha()
-
-        resume_button = button.Button(520, 285, resume_img, 0.45)
-        quit_button = button.Button(520, 415, quit_img, 0.45)
-
-        if resume_button.draw(self.screen):
+        if self.resume_button.draw(self.screen):
             self.pause = False
             self.music_manager.resume()
-        if quit_button.draw(self.screen):
+
+        if self.pause_quit_button.draw(self.screen):
             self.screen_manager.change_screen(MENU)
 
+        pygame.display.flip()
+
+    def controls_screen(self):
+        self.screen.fill("black")
+
+        font = pygame.font.Font(None, 60)
+        text = font.render("Keyboard Controls", True, (255, 255, 255))
+        self.screen.blit(text, (450, 100))
+
+        control_img = pygame.image.load("../assets/controls.png").convert_alpha()
+        control_img = pygame.transform.scale(control_img, (800, 400))  # Resize the image to desired dimensions
+        self.screen.blit(control_img, (280, 170))
+
+        back_img = pygame.image.load("../assets/back_button.png").convert_alpha()
+        back_button = button.Button(520, 600, back_img, 0.45)
+
+        if back_button.draw(self.screen):
+            self.screen_manager.change_screen(MENU)
+        
         pygame.display.flip()
 
     def update(self):
@@ -302,9 +315,9 @@ class Game:
             self.spawn_note()
             self.note_spawn_timer = 0
         self.update_notes()
-        # self.update_player_with_sensor()
-        # self.check_button_presses()
-        # self.update_leds_based_on_position()
+        self.update_player_with_sensor()
+        self.check_button_presses()
+        self.update_leds_based_on_position()
         update_diamond(self.diamond)  # Update diamonds
         update_particles(self.particles)
 
@@ -336,12 +349,13 @@ class Game:
 
 
     def run(self):
-        # self.music_manager.play("song1")
         while self.running:
             self.handle_events()
             if self.screen_manager.current_screen == MENU:
                 if not self.main_menu():
                     self.running = False
+            elif self.screen_manager.current_screen == CONTROL:
+                self.controls_screen()
             if self.screen_manager.current_screen == GAME:
                 if not self.pause:
                     self.update()
