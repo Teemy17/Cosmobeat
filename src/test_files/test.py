@@ -38,12 +38,12 @@ hit_area = pygame.Rect(move_area_start, player_pos.y - 20, move_area_end - move_
 hit_effect_time = 0
 
 # Custom note pattern
-# note_pattern = [
-#     (60, 0.2), (90, 0.8), (120, 0.5), (150, 0.3), (180, 0.7),
-#     (210, 0.2), (240, 0.8), (270, 0.5), (300, 0.3), (330, 0.7),
-#     (360, 0.2), (390, 0.8), (420, 0.5), (450, 0.3), (480, 0.7),
-#     # Add more notes as needed
-# ]
+note_pattern = [
+    (60, 0.2), (90, 0.8), (120, 0.5), (150, 0.3), (180, 0.7),
+    (210, 0.2), (240, 0.8), (270, 0.5), (300, 0.3), (330, 0.7),
+    (360, 0.2), (390, 0.8), (420, 0.5), (450, 0.3), (480, 0.7),
+    # Add more notes as needed
+]
 
 
 def draw_game_area():
@@ -54,14 +54,14 @@ def draw_game_area():
     pygame.draw.line(screen, bar_color, (move_area_start, 0), (move_area_start, screen.get_height()), line_thickness)
     pygame.draw.line(screen, bar_color, (move_area_end, 0), (move_area_end, screen.get_height()), line_thickness)
 
-def spawn_note(): # add param x_percent if custom note pattern is used 
-    # """Spawn a new note at the specified x position within the move area."""
-    # x = move_area_start + (move_area_end - move_area_start) * x_percent
-    # notes.append(pygame.Rect(x, 0, 50, 20))
+def spawn_note(x_percent): # add param x_percent if custom note pattern is used 
+    """Spawn a new note at the specified x position within the move area."""
+    x = move_area_start + (move_area_end - move_area_start) * x_percent
+    notes.append(pygame.Rect(x, 0, 50, 20))
 
     # spawn note ramdomly
-    x = random.uniform(move_area_start, move_area_end - 50)  # 50 is the note width
-    notes.append(pygame.Rect(x, 0, 50, 20))
+    # x = random.uniform(move_area_start, move_area_end - 50)  # 50 is the note width
+    # notes.append(pygame.Rect(x, 0, 50, 20))
 
 def update_notes():
     """Move notes down the screen and remove ones that are out of bounds."""
@@ -110,15 +110,15 @@ while running:
     # Keep player within bounds
     player_pos.x = max(move_area_start, min(move_area_end - player_pos.width, player_pos.x))
 
-    # # Spawn notes based on the pattern
-    # for note_time, note_x in note_pattern:
-    #     if current_time == note_time:
-    #         spawn_note(note_x)
+    # Spawn notes based on the pattern
+    for note_time, note_x in note_pattern:
+        if current_time == note_time:
+            spawn_note(note_x)
 
-    note_spawn_timer += 1
-    if note_spawn_timer >= note_spawn_interval:  
-        spawn_note()
-        note_spawn_timer = 0
+    # note_spawn_timer += 1
+    # if note_spawn_timer >= note_spawn_interval:  
+    #     spawn_note()
+    #     note_spawn_timer = 0
 
     # Update notes
     update_notes()
