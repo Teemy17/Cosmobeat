@@ -281,7 +281,7 @@ class Game:
         pygame.draw.line(self.screen, BAR_COLOR, (self.move_area_start, 0), (self.move_area_start, self.screen.get_height()), line_thickness)
         pygame.draw.line(self.screen, BAR_COLOR, (self.move_area_end, 0), (self.move_area_end, self.screen.get_height()), line_thickness)
 
-    def spawn_note(self):
+    def spawn_random_note(self):
         x = random.uniform(self.move_area_start, self.move_area_end - 50)
         if random.random() < 0.2:  # 20% chance to spawn a hold note
             duration = random.randint(2, 10)  # Hold duration between 2 and 10 units
@@ -499,7 +499,7 @@ class Game:
     def update(self):
         self.note_spawn_timer += 1
         if self.note_spawn_timer >= self.note_spawn_interval:
-            self.spawn_note()
+            self.spawn_random_note()
             self.note_spawn_timer = 0
         self.spawn_custom_note_pattern()
         self.update_notes()
