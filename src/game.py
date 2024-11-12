@@ -4,7 +4,7 @@ import button
 from constants import MENU, GAME, RESULT, CONTROL
 from constants import HORIZONTAL_LINE_COLOR, BAR_COLOR, HIT_COLOR
 from entities import Player, Note, HoldNote, MoveNote
-from hardware import Hardware
+# from hardware import Hardware
 from effects import Particle, HoldEffect, create_hit_effect_particle, update_particles, draw_particles, DiamondEffect, create_hit_effect_diamond, draw_diamond, update_diamond
 from music_manager import MusicManager
 from result_screen import ResultScreen
@@ -20,9 +20,9 @@ class Game:
 
         self.music_manager = MusicManager()
         # Load song
-        self.music_manager.load_song("song1", "../assets/test_music.mp3")
+        self.music_manager.load_song("song1", "../assets/freedom_dive.mp3")
 
-        self.hardware = Hardware()
+        # self.hardware = Hardware()
         self.move_area_start = width * 0.25
         self.move_area_end = width * 0.75
         initial_x = (self.move_area_start + self.move_area_end) / 2
@@ -52,11 +52,167 @@ class Game:
         self.hold_count = 0
         self.drag_count = 0
 
+        # time. x-position, and type
+        # self.custom_note_pattern = [ 
+        #     (3, self.move_area_start + 100, 'Note'),
+        #     (50, self.move_area_start + 150, 'HoldNote', 3),  # Hold note with duration
+        #     (100, self.move_area_start + 200, 'MoveNote'),  # Move note
+        #     (150, self.move_area_start + 250, 'Note'),
+        #     (200, self.move_area_start + 300, 'HoldNote', 4),  # Hold note with longer duration
+
+        #      # Add more notes with timing, x-position, and type
+        # ]
+
+        # Define the edges of the move area
+        left_edge = self.move_area_start
+        right_edge = self.move_area_end
+        center = (left_edge + right_edge) / 2
+        quarter = left_edge + (right_edge - left_edge) * 0.25
+        three_quarter = left_edge + (right_edge - left_edge) * 0.75
+
+        # Define the pattern with (time, x-position, type, [optional duration])
+        self.original_note_pattern = [
+            # Intro sequence
+            (0, center, 'Note'),
+            (30, quarter, 'Note'),
+            (60, three_quarter, 'Note'),
+            
+            # Hold note sequence
+            (120, left_edge + 100, 'HoldNote', 2),
+            (180, right_edge - 100, 'HoldNote', 3),
+            
+            # Quick alternating pattern
+            (300, quarter, 'Note'),
+            (330, three_quarter, 'Note'),
+            (360, quarter, 'Note'),
+            (390, three_quarter, 'Note'),
+            
+            # Moving note challenge
+            (450, left_edge + 200, 'MoveNote'),
+            (510, right_edge - 200, 'MoveNote'),
+            
+            # Complex sequence
+            (600, center, 'HoldNote', 4),
+            (700, quarter, 'MoveNote'),
+            (760, three_quarter, 'Note'),
+            (790, center, 'Note'),
+            (820, quarter, 'HoldNote' , 5),
+            
+            # Stair
+            (900, left_edge + 100, 'Note'),
+            (915, left_edge + 200, 'Note'),
+            (930, left_edge + 300, 'Note'),
+            (945, left_edge + 400, 'Note'),
+            
+            # Pattern
+            (1000, center, 'HoldNote', 5),
+            (1100, quarter, 'Note'),
+            (1150, three_quarter, 'Note'),
+            (1200, center, 'Note'),
+
+            # Rapid Drag
+            (1300, left_edge + 100, 'MoveNote'),
+            (1310, left_edge + 200, 'MoveNote'),
+            (1320, left_edge + 300, 'MoveNote'),
+            (1330, left_edge + 400, 'MoveNote'),
+
+            (1340, right_edge - 100, 'MoveNote'),
+            (1350, right_edge - 200, 'MoveNote'),
+            (1360, right_edge - 300, 'MoveNote'),
+            (1370, right_edge - 400, 'MoveNote'),
+            (1380, right_edge - 500, 'MoveNote'),
+
+            # Stairs
+            (1400, left_edge + 100, 'Note'),
+            (1420, left_edge + 200, 'Note'),
+            (1440, left_edge + 300, 'Note'),
+            (1460, left_edge + 400, 'Note'),
+
+            (1480, right_edge - 100, 'Note'),
+            (1500, right_edge - 200, 'Note'),
+            (1520, right_edge - 300, 'Note'),
+            (1540, right_edge - 400, 'Note'),
+            (1560, right_edge - 500, 'Note'),
+
+            # Hold Note
+            (1700, center, 'HoldNote', 5),
+            (1800, quarter, 'HoldNote', 5),
+            (1900, three_quarter, 'HoldNote', 6),
+            (2000, center, 'HoldNote',7),
+            (2100, quarter, 'HoldNote', 5),
+            (2200, three_quarter, 'HoldNote', 9),
+
+            # Move Note
+            (2300, left_edge + 100, 'MoveNote'),
+            (2320, left_edge + 200, 'MoveNote'),
+            (2340, left_edge + 300, 'MoveNote'),
+            (2360, left_edge + 400, 'MoveNote'),
+
+            (2380, right_edge - 100, 'MoveNote'),
+            (2400, right_edge - 200, 'MoveNote'),
+            (2420, right_edge - 300, 'MoveNote'),
+            (2440, right_edge - 400, 'MoveNote'),
+            (2460, right_edge - 500, 'MoveNote'),
+
+            # Spam
+            (2500, center, 'Note'),
+            (2520, center, 'Note'),
+            (2540, center, 'Note'),
+            (2560, center, 'Note'),
+            (2580, center, 'Note'),
+
+            # Alternating 2
+            (2600, quarter, 'Note'),
+            (2620, three_quarter, 'Note'),
+            (2640, quarter, 'Note'),
+            (2660, three_quarter, 'Note'),
+
+            # Complex sequence
+            (2700, center, 'HoldNote', 4),
+            (2800, quarter, 'MoveNote'),
+            (2860, three_quarter, 'Note'),
+            (2900, center, 'Note'),
+            (3000, quarter, 'HoldNote' , 5),
+
+            # Notes sequence
+            (3100, left_edge + 100, 'Note'),
+            (3150, right_edge - 100, 'Note'),
+            (3200, left_edge + 200, 'Note'),
+            (3250, right_edge - 200, 'Note'),
+            (3300, left_edge + 300, 'Note'),
+            (3350, right_edge - 300, 'Note'),
+            (3400, left_edge + 400, 'Note'),
+            (3450, right_edge - 400, 'Note'),
+
+            # Note sequence
+            (3500, center, 'HoldNote', 7),
+            (3600, quarter, 'Note'),
+            (3650, three_quarter, 'Note'),
+            (3700, center, 'Note'),
+
+            # Rapid Drag
+            (3750, left_edge + 100, 'MoveNote'),
+            (3760, left_edge + 200, 'MoveNote'),
+            (3770, left_edge + 300, 'MoveNote'),
+            (3780, left_edge + 400, 'MoveNote'),
+
+            (3790, right_edge - 100, 'MoveNote'),
+            (3800, right_edge - 200, 'MoveNote'),
+            (3810, right_edge - 300, 'MoveNote'),
+            (3820, right_edge - 400, 'MoveNote'),
+            (3830, right_edge - 500, 'MoveNote'),
+
+        ]
+        self.custom_note_pattern = self.original_note_pattern.copy()
+
+
         # Initialize buttons
         play_img = pygame.image.load("../assets/play_button.png").convert_alpha()
         control_img = pygame.image.load("../assets/control_button.png").convert_alpha()
         quit_img = pygame.image.load("../assets/quit_button.png").convert_alpha()
         resume_img = pygame.image.load("../assets/resume_button.png").convert_alpha()
+        alien_img = pygame.image.load("../assets/groove_coaster.jpg").convert_alpha()
+        bg = pygame.image.load("../assets/space_bg.jpg").convert_alpha()
         
         # Store buttons as instance attributes
         self.play_button = button.Button(520, 285, play_img, 0.45)
@@ -64,6 +220,8 @@ class Game:
         self.main_menu_quit_button = button.Button(520, 545, quit_img, 0.45)
         self.pause_quit_button = button.Button(520, 450, quit_img, 0.45)
         self.resume_button = button.Button(520, 300, resume_img, 0.45)
+        self.alien_img = pygame.transform.scale(alien_img, (200, 200))
+        self.bg = pygame.transform.scale(bg, (self.screen.get_width(), self.screen.get_height()))
 
 
     def update_player_with_sensor(self):
@@ -84,7 +242,7 @@ class Game:
     def reset_game(self, width, height):
         # Reset game state
         self.pause = False
-        self.notes = []  # Clear notes to prevent immediate ending
+        self.notes = []  
         self.feedback = ""
         self.feedback_time = 0
         self.hit_effect_time = 0
@@ -92,6 +250,9 @@ class Game:
         self.highest_combo = 0
         self.diamond = []
         self.particles = []
+
+        self.custom_note_pattern = self.original_note_pattern.copy()
+        self.note_spawn_timer = 0
 
         # Reset counters
         self.perfect_count = 0
@@ -108,9 +269,7 @@ class Game:
         initial_y = height * 0.85
         self.player = Player(initial_x, initial_y, 100, 20, self.move_area_start, self.move_area_end)
 
-        # Reset any timers or spawn-related settings
-        self.note_spawn_timer = 0
-        self.note_spawn_interval = 30  # Reset spawn interval if needed
+        self.note_spawn_interval = 30  
 
         # Reset the score
         self.score = 0
@@ -133,6 +292,22 @@ class Game:
         else:
             self.notes.append(Note(x, 0, 50, 20, self.note_speed))
 
+    def spawn_custom_note_pattern(self):
+            # Check if there are notes to spawn at the current time
+        for note_data in self.custom_note_pattern[:]:  # Iterate over the pattern
+            time, x, note_type, *extra = note_data  # Unpack note data
+            if self.note_spawn_timer == time:
+                # Spawn the note based on type
+                if note_type == 'Note':
+                    self.notes.append(Note(x, 0, 50, 20, self.note_speed))
+                elif note_type == 'HoldNote':
+                    duration = extra[0] if extra else 3  # Default to 3 if not specified
+                    self.notes.append(HoldNote(x, 0, 50, 20, self.note_speed, duration))
+                elif note_type == 'MoveNote':
+                    self.notes.append(MoveNote(x, 0, 50, 50, self.note_speed))
+                # Remove from pattern list once spawned
+                self.custom_note_pattern.remove(note_data)
+
     def update_notes(self):
         for note in self.notes[:]:
             note.update()
@@ -143,7 +318,7 @@ class Game:
                 self.feedback_time = 30
                 self.combo = 0
                 self.miss_count += 1
-                self.hardware.buzzer.beep(0.1, 0, 1) #Uncomment to make buzzer buss
+                # self.hardware.buzzer.beep(0.1, 0, 1) #Uncomment to make buzzer buss
              
 
     def check_note_hit(self, is_key_pressed):
@@ -255,8 +430,8 @@ class Game:
             self.check_note_hit(is_key_pressed) 
                     
     def main_menu(self):
-        self.screen.fill((0, 0, 0))
-        font = pygame.font.Font(None, 150)
+        self.screen.blit(self.bg, (0, 0))
+        font = pygame.font.Font("../assets/groove-coaster.ttf", 100)
         text = font.render("Cosmobeat", True, (255, 255, 255))
         
         if self.play_button.draw(self.screen):
@@ -270,16 +445,17 @@ class Game:
         if self.main_menu_quit_button.draw(self.screen):
             self.running = False
         
-        self.screen.blit(text, (370, 100))
+        self.screen.blit(text, (350, 100))
+        self.screen.blit(self.alien_img, (100, 30))
         pygame.display.flip()
 
         return True
     
     def draw_pause_screen(self):
-        self.screen.fill("black")
-        font = pygame.font.Font(None, 150)
+        self.screen.blit(self.bg, (0, 0))
+        font = pygame.font.Font("../assets/groove-coaster.ttf", 100)
         text = font.render("Paused", True, (255, 255, 255))
-        self.screen.blit(text, (470, 100))
+        self.screen.blit(text, (420, 100))
 
         if self.resume_button.draw(self.screen):
             self.pause = False
@@ -291,7 +467,7 @@ class Game:
         pygame.display.flip()
 
     def controls_screen(self):
-        self.screen.fill("black")
+        self.screen.blit(self.bg, (0, 0))
 
         font = pygame.font.Font(None, 60)
         text = font.render("Keyboard Controls", True, (255, 255, 255))
@@ -311,13 +487,14 @@ class Game:
 
     def update(self):
         self.note_spawn_timer += 1
-        if self.note_spawn_timer >= self.note_spawn_interval:
-            self.spawn_note()
-            self.note_spawn_timer = 0
+        # if self.note_spawn_timer >= self.note_spawn_interval:
+        #     self.spawn_note()
+        #     self.note_spawn_timer = 0
+        self.spawn_custom_note_pattern()
         self.update_notes()
-        self.update_player_with_sensor()
-        self.check_button_presses()
-        self.update_leds_based_on_position()
+        # self.update_player_with_sensor()
+        # self.check_button_presses()
+        # self.update_leds_based_on_position()
         update_diamond(self.diamond)  # Update diamonds
         update_particles(self.particles)
 

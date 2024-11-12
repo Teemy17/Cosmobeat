@@ -42,8 +42,6 @@ class MoveNote(Note):
         # Blit the diamond onto the main screen
         screen.blit(diamond_surface, (self.rect.x, self.rect.y))
 
-
-
 class Player:
     def __init__(self, x, y, width, height, move_area_start, move_area_end):
         self.rect = pygame.Rect(x, y, width, height)
