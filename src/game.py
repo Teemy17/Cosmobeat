@@ -19,8 +19,8 @@ class Game:
         self.pause = False
 
         self.music_manager = MusicManager()
-        # Load song
-        self.music_manager.load_song("song1", "../assets/freedom_dive.mp3")
+        # Load song# 
+        self.music_manager.load_song("song1", "../assets/freedom_dive_short_ver.mp3")
 
         self.hardware = Hardware()
         self.move_area_start = width * 0.25
@@ -52,157 +52,157 @@ class Game:
         self.hold_count = 0
         self.drag_count = 0
 
-        self.custom_note_pattern = [ 
-            (3, self.move_area_start + 100, 'Note'),
-            (50, self.move_area_start + 150, 'HoldNote', 3),  # Hold note with duration
-            (100, self.move_area_start + 200, 'MoveNote'),  # Move note
-            (150, self.move_area_start + 250, 'Note'),
-            (200, self.move_area_start + 300, 'HoldNote', 4),  # Hold note with longer duration
+        # self.custom_note_pattern = [ 
+        #     (3, self.move_area_start + 100, 'Note'),
+        #     (50, self.move_area_start + 150, 'HoldNote', 3),  # Hold note with duration
+        #     (100, self.move_area_start + 200, 'MoveNote'),  # Move note
+        #     (150, self.move_area_start + 250, 'Note'),
+        #     (200, self.move_area_start + 300, 'HoldNote', 4),  # Hold note with longer duration
 
-             # Add more notes with timing, x-position, and type
-        ]
+        #      # Add more notes with timing, x-position, and type
+        # ]
 
         # Define the edges of the move area
-        left_edge = self.move_area_start
-        right_edge = self.move_area_end
-        center = (left_edge + right_edge) / 2
-        quarter = left_edge + (right_edge - left_edge) * 0.25
-        three_quarter = left_edge + (right_edge - left_edge) * 0.75
+        # left_edge = self.move_area_start
+        # right_edge = self.move_area_end
+        # center = (left_edge + right_edge) / 2
+        # quarter = left_edge + (right_edge - left_edge) * 0.25
+        # three_quarter = left_edge + (right_edge - left_edge) * 0.75
 
         # Define the pattern with (time, x-position, type, [optional duration])
-        self.original_note_pattern = [
-            # Intro sequence
-            (0, center, 'Note'),
-            (30, quarter, 'Note'),
-            (60, three_quarter, 'Note'),
+        # self.original_note_pattern = [
+        #     # Intro sequence
+        #     (0, center, 'Note'),
+        #     (30, quarter, 'Note'),
+        #     (60, three_quarter, 'Note'),
             
-            # # Hold note sequence
-            (120, left_edge + 100, 'HoldNote', 2),
-            (180, right_edge - 100, 'HoldNote', 3),
+        #     # # Hold note sequence
+        #     (120, left_edge + 100, 'HoldNote', 2),
+        #     (180, right_edge - 100, 'HoldNote', 3),
             
-            # # Quick alternating pattern
-            (300, quarter, 'Note'),
-            (330, three_quarter, 'Note'),
-            (360, quarter, 'Note'),
-            (390, three_quarter, 'Note'),
+        #     # # Quick alternating pattern
+        #     (300, quarter, 'Note'),
+        #     (330, three_quarter, 'Note'),
+        #     (360, quarter, 'Note'),
+        #     (390, three_quarter, 'Note'),
             
-            # # Moving note challenge
-            (450, left_edge + 200, 'MoveNote'),
-            (510, right_edge - 200, 'MoveNote'),
+        #     # # Moving note challenge
+        #     (450, left_edge + 200, 'MoveNote'),
+        #     (510, right_edge - 200, 'MoveNote'),
             
-            # Complex sequence
-            (600, center, 'HoldNote', 4),
-            (700, quarter, 'MoveNote'),
-            (760, three_quarter, 'Note'),
-            (790, center, 'Note'),
-            (820, quarter, 'HoldNote' , 5),
+        #     # Complex sequence
+        #     (600, center, 'HoldNote', 4),
+        #     (700, quarter, 'MoveNote'),
+        #     (760, three_quarter, 'Note'),
+        #     (790, center, 'Note'),
+        #     (820, quarter, 'HoldNote' , 5),
             
-            # Stair
-            (900, left_edge + 100, 'Note'),
-            (915, left_edge + 200, 'Note'),
-            (930, left_edge + 300, 'Note'),
-            (945, left_edge + 400, 'Note'),
+        #     # Stair
+        #     (900, left_edge + 100, 'Note'),
+        #     (915, left_edge + 200, 'Note'),
+        #     (930, left_edge + 300, 'Note'),
+        #     (945, left_edge + 400, 'Note'),
             
-            # Pattern
-            (1000, center, 'HoldNote', 5),
-            (1100, quarter, 'Note'),
-            (1150, three_quarter, 'Note'),
-            (1200, center, 'Note'),
+        #     # Pattern
+        #     (1000, center, 'HoldNote', 5),
+        #     (1100, quarter, 'Note'),
+        #     (1150, three_quarter, 'Note'),
+        #     (1200, center, 'Note'),
 
-            # Rapid Drag
-            (1300, left_edge + 100, 'MoveNote'),
-            (1310, left_edge + 200, 'MoveNote'),
-            (1320, left_edge + 300, 'MoveNote'),
-            (1330, left_edge + 400, 'MoveNote'),
+        #     # Rapid Drag
+        #     (1300, left_edge + 100, 'MoveNote'),
+        #     (1310, left_edge + 200, 'MoveNote'),
+        #     (1320, left_edge + 300, 'MoveNote'),
+        #     (1330, left_edge + 400, 'MoveNote'),
 
-            (1340, right_edge - 100, 'MoveNote'),
-            (1350, right_edge - 200, 'MoveNote'),
-            (1360, right_edge - 300, 'MoveNote'),
-            (1370, right_edge - 400, 'MoveNote'),
-            (1380, right_edge - 500, 'MoveNote'),
+        #     (1340, right_edge - 100, 'MoveNote'),
+        #     (1350, right_edge - 200, 'MoveNote'),
+        #     (1360, right_edge - 300, 'MoveNote'),
+        #     (1370, right_edge - 400, 'MoveNote'),
+        #     (1380, right_edge - 500, 'MoveNote'),
 
-            # Stairs
-            (1400, left_edge + 100, 'Note'),
-            (1420, left_edge + 200, 'Note'),
-            (1440, left_edge + 300, 'Note'),
-            (1460, left_edge + 400, 'Note'),
+        #     # Stairs
+        #     (1400, left_edge + 100, 'Note'),
+        #     (1420, left_edge + 200, 'Note'),
+        #     (1440, left_edge + 300, 'Note'),
+        #     (1460, left_edge + 400, 'Note'),
 
-            (1480, right_edge - 100, 'Note'),
-            (1500, right_edge - 200, 'Note'),
-            (1520, right_edge - 300, 'Note'),
-            (1540, right_edge - 400, 'Note'),
-            (1560, right_edge - 500, 'Note'),
+        #     (1480, right_edge - 100, 'Note'),
+        #     (1500, right_edge - 200, 'Note'),
+        #     (1520, right_edge - 300, 'Note'),
+        #     (1540, right_edge - 400, 'Note'),
+        #     (1560, right_edge - 500, 'Note'),
 
-            # Hold Note
-            (1700, center, 'HoldNote', 5),
-            (1800, quarter, 'HoldNote', 5),
-            (1900, three_quarter, 'HoldNote', 6),
-            (2000, center, 'HoldNote',7),
-            (2100, quarter, 'HoldNote', 5),
-            (2200, three_quarter, 'HoldNote', 9),
+        #     # Hold Note
+        #     (1700, center, 'HoldNote', 5),
+        #     (1800, quarter, 'HoldNote', 5),
+        #     (1900, three_quarter, 'HoldNote', 6),
+        #     (2000, center, 'HoldNote',7),
+        #     (2100, quarter, 'HoldNote', 5),
+        #     (2200, three_quarter, 'HoldNote', 9),
 
-            # Move Note
-            (2300, left_edge + 100, 'MoveNote'),
-            (2320, left_edge + 200, 'MoveNote'),
-            (2340, left_edge + 300, 'MoveNote'),
-            (2360, left_edge + 400, 'MoveNote'),
+        #     # Move Note
+        #     (2300, left_edge + 100, 'MoveNote'),
+        #     (2320, left_edge + 200, 'MoveNote'),
+        #     (2340, left_edge + 300, 'MoveNote'),
+        #     (2360, left_edge + 400, 'MoveNote'),
 
-            (2380, right_edge - 100, 'MoveNote'),
-            (2400, right_edge - 200, 'MoveNote'),
-            (2420, right_edge - 300, 'MoveNote'),
-            (2440, right_edge - 400, 'MoveNote'),
-            (2460, right_edge - 500, 'MoveNote'),
+        #     (2380, right_edge - 100, 'MoveNote'),
+        #     (2400, right_edge - 200, 'MoveNote'),
+        #     (2420, right_edge - 300, 'MoveNote'),
+        #     (2440, right_edge - 400, 'MoveNote'),
+        #     (2460, right_edge - 500, 'MoveNote'),
 
-            # Spam
-            (2500, center, 'Note'),
-            (2520, center, 'Note'),
-            (2540, center, 'Note'),
-            (2560, center, 'Note'),
-            (2580, center, 'Note'),
+        #     # Spam
+        #     (2500, center, 'Note'),
+        #     (2520, center, 'Note'),
+        #     (2540, center, 'Note'),
+        #     (2560, center, 'Note'),
+        #     (2580, center, 'Note'),
 
-            # Alternating 2
-            (2600, quarter, 'Note'),
-            (2620, three_quarter, 'Note'),
-            (2640, quarter, 'Note'),
-            (2660, three_quarter, 'Note'),
+        #     # Alternating 2
+        #     (2600, quarter, 'Note'),
+        #     (2620, three_quarter, 'Note'),
+        #     (2640, quarter, 'Note'),
+        #     (2660, three_quarter, 'Note'),
 
-            # Complex sequence
-            (2700, center, 'HoldNote', 4),
-            (2800, quarter, 'MoveNote'),
-            (2860, three_quarter, 'Note'),
-            (2900, center, 'Note'),
-            (3000, quarter, 'HoldNote' , 5),
+        #     # Complex sequence
+        #     (2700, center, 'HoldNote', 4),
+        #     (2800, quarter, 'MoveNote'),
+        #     (2860, three_quarter, 'Note'),
+        #     (2900, center, 'Note'),
+        #     (3000, quarter, 'HoldNote' , 5),
 
-            # Notes sequence
-            (3100, left_edge + 100, 'Note'),
-            (3150, right_edge - 100, 'Note'),
-            (3200, left_edge + 200, 'Note'),
-            (3250, right_edge - 200, 'Note'),
-            (3300, left_edge + 300, 'Note'),
-            (3350, right_edge - 300, 'Note'),
-            (3400, left_edge + 400, 'Note'),
-            (3450, right_edge - 400, 'Note'),
+        #     # Notes sequence
+        #     (3100, left_edge + 100, 'Note'),
+        #     (3150, right_edge - 100, 'Note'),
+        #     (3200, left_edge + 200, 'Note'),
+        #     (3250, right_edge - 200, 'Note'),
+        #     (3300, left_edge + 300, 'Note'),
+        #     (3350, right_edge - 300, 'Note'),
+        #     (3400, left_edge + 400, 'Note'),
+        #     (3450, right_edge - 400, 'Note'),
 
-            # Note sequence
-            (3500, center, 'HoldNote', 7),
-            (3600, quarter, 'Note'),
-            (3650, three_quarter, 'Note'),
-            (3700, center, 'Note'),
+        #     # Note sequence
+        #     (3500, center, 'HoldNote', 7),
+        #     (3600, quarter, 'Note'),
+        #     (3650, three_quarter, 'Note'),
+        #     (3700, center, 'Note'),
 
-            # Rapid Drag
-            (3750, left_edge + 100, 'MoveNote'),
-            (3760, left_edge + 200, 'MoveNote'),
-            (3770, left_edge + 300, 'MoveNote'),
-            (3780, left_edge + 400, 'MoveNote'),
+        #     # Rapid Drag
+        #     (3750, left_edge + 100, 'MoveNote'),
+        #     (3760, left_edge + 200, 'MoveNote'),
+        #     (3770, left_edge + 300, 'MoveNote'),
+        #     (3780, left_edge + 400, 'MoveNote'),
 
-            (3790, right_edge - 100, 'MoveNote'),
-            (3800, right_edge - 200, 'MoveNote'),
-            (3810, right_edge - 300, 'MoveNote'),
-            (3820, right_edge - 400, 'MoveNote'),
-            (3830, right_edge - 500, 'MoveNote'),
+        #     (3790, right_edge - 100, 'MoveNote'),
+        #     (3800, right_edge - 200, 'MoveNote'),
+        #     (3810, right_edge - 300, 'MoveNote'),
+        #     (3820, right_edge - 400, 'MoveNote'),
+        #     (3830, right_edge - 500, 'MoveNote'),
 
-        ]
-        self.custom_note_pattern = self.original_note_pattern.copy()
+        # ]
+        # self.custom_note_pattern = self.original_note_pattern.copy()
 
 
         # Initialize buttons
@@ -250,7 +250,7 @@ class Game:
         self.diamond = []
         self.particles = []
 
-        self.custom_note_pattern = self.original_note_pattern.copy()
+        # self.custom_note_pattern = self.original_note_pattern.copy()
         self.note_spawn_timer = 0
 
         # Reset counters
@@ -406,7 +406,7 @@ class Game:
                 self.feedback_time = 30
                 self.combo = 0
                 self.miss_count += 1
-                self.hardware.buzzer.beep(0.1, 0, 1)  # Uncomment to make buzzer buzz
+                # self.hardware.buzzer.beep(0.1, 0, 1)  # Uncomment to make buzzer buzz
 
     def handle_events(self):
         for event in pygame.event.get():
@@ -501,7 +501,7 @@ class Game:
         if self.note_spawn_timer >= self.note_spawn_interval:
             self.spawn_random_note()
             self.note_spawn_timer = 0
-        self.spawn_custom_note_pattern()
+        # self.spawn_custom_note_pattern()
         self.update_notes()
         self.update_player_with_sensor()
         self.check_button_presses()
