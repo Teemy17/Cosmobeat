@@ -71,7 +71,7 @@ class Game:
         three_quarter = left_edge + (right_edge - left_edge) * 0.75
 
         # Define the pattern with (time, x-position, type, [optional duration])
-        self.custom_note_pattern = [
+        self.original_note_pattern = [
             # Intro sequence
             (0, center, 'Note'),
             (30, quarter, 'Note'),
@@ -203,6 +203,7 @@ class Game:
             (3830, right_edge - 500, 'MoveNote'),
 
         ]
+        self.custom_note_pattern = self.original_note_pattern.copy()
 
 
         # Initialize buttons
@@ -210,6 +211,8 @@ class Game:
         control_img = pygame.image.load("../assets/control_button.png").convert_alpha()
         quit_img = pygame.image.load("../assets/quit_button.png").convert_alpha()
         resume_img = pygame.image.load("../assets/resume_button.png").convert_alpha()
+        alien_img = pygame.image.load("../assets/groove_coaster.jpg").convert_alpha()
+        bg = pygame.image.load("../assets/space_bg.jpg").convert_alpha()
         
         # Store buttons as instance attributes
         self.play_button = button.Button(520, 285, play_img, 0.45)
@@ -217,6 +220,8 @@ class Game:
         self.main_menu_quit_button = button.Button(520, 545, quit_img, 0.45)
         self.pause_quit_button = button.Button(520, 450, quit_img, 0.45)
         self.resume_button = button.Button(520, 300, resume_img, 0.45)
+        self.alien_img = pygame.transform.scale(alien_img, (200, 200))
+        self.bg = pygame.transform.scale(bg, (self.screen.get_width(), self.screen.get_height()))
 
 
     def update_player_with_sensor(self):
@@ -237,7 +242,7 @@ class Game:
     def reset_game(self, width, height):
         # Reset game state
         self.pause = False
-        self.notes = []  # Clear notes to prevent immediate ending
+        self.notes = []  
         self.feedback = ""
         self.feedback_time = 0
         self.hit_effect_time = 0
@@ -245,6 +250,9 @@ class Game:
         self.highest_combo = 0
         self.diamond = []
         self.particles = []
+
+        self.custom_note_pattern = self.original_note_pattern.copy()
+        self.note_spawn_timer = 0
 
         # Reset counters
         self.perfect_count = 0
@@ -261,9 +269,7 @@ class Game:
         initial_y = height * 0.85
         self.player = Player(initial_x, initial_y, 100, 20, self.move_area_start, self.move_area_end)
 
-        # Reset any timers or spawn-related settings
-        self.note_spawn_timer = 0
-        self.note_spawn_interval = 30  # Reset spawn interval if needed
+        self.note_spawn_interval = 30  
 
         # Reset the score
         self.score = 0
@@ -424,8 +430,8 @@ class Game:
             self.check_note_hit(is_key_pressed) 
                     
     def main_menu(self):
-        self.screen.fill((0, 0, 0))
-        font = pygame.font.Font(None, 150)
+        self.screen.blit(self.bg, (0, 0))
+        font = pygame.font.Font("../assets/groove-coaster.ttf", 100)
         text = font.render("Cosmobeat", True, (255, 255, 255))
         
         if self.play_button.draw(self.screen):
@@ -439,16 +445,17 @@ class Game:
         if self.main_menu_quit_button.draw(self.screen):
             self.running = False
         
-        self.screen.blit(text, (370, 100))
+        self.screen.blit(text, (350, 100))
+        self.screen.blit(self.alien_img, (100, 30))
         pygame.display.flip()
 
         return True
     
     def draw_pause_screen(self):
-        self.screen.fill("black")
-        font = pygame.font.Font(None, 150)
+        self.screen.blit(self.bg, (0, 0))
+        font = pygame.font.Font("../assets/groove-coaster.ttf", 100)
         text = font.render("Paused", True, (255, 255, 255))
-        self.screen.blit(text, (470, 100))
+        self.screen.blit(text, (420, 100))
 
         if self.resume_button.draw(self.screen):
             self.pause = False
@@ -460,7 +467,7 @@ class Game:
         pygame.display.flip()
 
     def controls_screen(self):
-        self.screen.fill("black")
+        self.screen.blit(self.bg, (0, 0))
 
         font = pygame.font.Font(None, 60)
         text = font.render("Keyboard Controls", True, (255, 255, 255))

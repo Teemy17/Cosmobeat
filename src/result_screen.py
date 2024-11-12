@@ -8,9 +8,12 @@ class ResultScreen:
         self.screen_manager = screen_manager
         self.game_stats = game_stats
         self.font = pygame.font.Font(None, 48)
+        bg = pygame.image.load("../assets/space_bg.jpg").convert_alpha()
+        self.bg = pygame.transform.scale(bg, (self.screen.get_width(), self.screen.get_height()))   
+
 
     def draw(self):
-        self.screen.fill("black")
+        self.screen.blit(self.bg, (0, 0))
 
         # Display the menu button
         menu_img = pygame.image.load("../assets/menu_button.png").convert_alpha()
